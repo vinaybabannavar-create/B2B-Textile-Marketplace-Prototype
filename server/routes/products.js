@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const { Product } = require('../models/schemas');
-const { isMongoConnected, memoryDB, generateId } = require('../db/store');
+const { isMongoConnected, memoryDB, saveMemoryDB, generateId } = require('../db/store');
 const { generateProductDescription } = require('../services/ai');
 
 // Get all products with search & filters
@@ -121,6 +121,7 @@ router.post('/', async (req, res) => {
       const id = generateId();
       const product = { _id: id, id, ...newProdData };
       memoryDB.products.unshift(product);
+      saveMemoryDB();
       return res.json(product);
     }
   } catch (err) {
@@ -142,6 +143,7 @@ router.put('/:id', async (req, res) => {
       let item = memoryDB.products.find(p => p._id === id || p.id === id);
       if (!item) return res.status(404).json({ error: 'Product not found' });
       Object.assign(item, updateData);
+      saveMemoryDB();
       return res.json(item);
     }
   } catch (err) {
@@ -157,6 +159,7 @@ router.delete('/:id', async (req, res) => {
       await Product.findByIdAndDelete(id);
     } else {
       memoryDB.products = memoryDB.products.filter(p => p._id !== id && p.id !== id);
+      saveMemoryDB();
     }
     return res.json({ success: true, message: 'Product deleted successfully' });
   } catch (err) {

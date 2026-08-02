@@ -208,8 +208,12 @@ const seedProductsList = [
   }
 ];
 
+const bcrypt = require('bcryptjs');
+
 async function seedData() {
   try {
+    const hashedPassword = await bcrypt.hash('password123', 10);
+
     if (isMongoConnected()) {
       const userCount = await User.countDocuments();
       if (userCount === 0) {
@@ -218,7 +222,7 @@ async function seedData() {
         const buyerUser = await User.create({
           name: 'Apex Garments Manufacturing',
           email: 'buyer@fabricmart.com',
-          password: 'password123',
+          password: hashedPassword,
           role: 'buyer'
         });
         await BuyerProfile.create({
@@ -232,7 +236,7 @@ async function seedData() {
         const supplierUser = await User.create({
           name: 'Vanguard Mills',
           email: 'supplier@vanguardmills.com',
-          password: 'password123',
+          password: hashedPassword,
           role: 'supplier'
         });
         await SupplierProfile.create({
@@ -257,7 +261,7 @@ async function seedData() {
           _id: buyerId,
           name: 'Apex Apparel Studio',
           email: 'buyer@fabricmart.com',
-          password: 'password123',
+          password: hashedPassword,
           role: 'buyer',
           createdAt: new Date()
         });
@@ -279,7 +283,7 @@ async function seedData() {
           _id: supplierId,
           name: 'Vanguard Mills',
           email: 'supplier@vanguardmills.com',
-          password: 'password123',
+          password: hashedPassword,
           role: 'supplier',
           createdAt: new Date()
         });

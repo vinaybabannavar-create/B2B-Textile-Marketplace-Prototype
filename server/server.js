@@ -57,4 +57,12 @@ app.use((err, req, res, next) => {
 
 app.listen(PORT, () => {
   console.log(`🚀 FabricMart Fullstack Server listening on port ${PORT}`);
+  if (!process.env.JWT_SECRET) {
+    console.log('⚠️ JWT_SECRET not set in environment. Using secure fallback for local development.');
+  }
+  if (!process.env.HUGGINGFACE_API_KEY) {
+    console.log('💡 HUGGINGFACE_API_KEY not set. AI Assistant is running with local structured NLU search + recommendation engine.');
+  } else {
+    console.log('🤖 Hugging Face Inference API enabled for open-ended LLM chat.');
+  }
 });

@@ -3,7 +3,7 @@ const router = express.Router();
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
 const { User, BuyerProfile, SupplierProfile } = require('../models/schemas');
-const { isMongoConnected, memoryDB, generateId } = require('../db/store');
+const { isMongoConnected, memoryDB, saveMemoryDB, generateId } = require('../db/store');
 
 const JWT_SECRET = process.env.JWT_SECRET || 'fabricmart_super_secret_jwt_key_2026';
 
@@ -44,8 +44,9 @@ router.post('/register', async (req, res) => {
       const existing = memoryDB.users.find(u => u.email === email);
       if (existing) return res.status(400).json({ error: 'Email already registered' });
 
+      const hashedPassword = await bcrypt.hash(password, 10);
       const userId = generateId();
-      const user = { id: userId, _id: userId, name, email, password, role, createdAt: new Date() };
+      const user = { id: userId, _id: userId, name, email, password: hashedPassword, role, createdAt: new Date() };
       memoryDB.users.push(user);
 
       if (role === 'buyer') {
@@ -53,6 +54,7 @@ router.post('/register', async (req, res) => {
       } else {
         memoryDB.supplierProfiles.push({ id: generateId(), userId, businessName: `${name} Textiles`, businessType: 'Fabric Mill', isOnboarded: false });
       }
+      saveMemoryDB();
 
       const token = generateToken(user);
       return res.json({ token, user: { id: user.id, name: user.name, email: user.email, role: user.role } });
@@ -74,7 +76,7 @@ router.post('/login', async (req, res) => {
       if (!user) return res.status(400).json({ error: 'Invalid credentials' });
 
       const isMatch = await bcrypt.compare(password, user.password);
-      if (!isMatch && password !== 'password123') return res.status(400).json({ error: 'Invalid credentials' });
+      if (!isMatch) return res.status(400).json({ error: 'Invalid credentials' });
 
       const token = generateToken(user);
       return res.json({ token, user: { id: user._id, name: user.name, email: user.email, role: user.role } });
@@ -83,7 +85,8 @@ router.post('/login', async (req, res) => {
       const user = memoryDB.users.find(u => u.email === email);
       if (!user) return res.status(400).json({ error: 'Invalid credentials' });
 
-      if (user.password !== password && password !== 'password123') {
+      const isMatch = await bcrypt.compare(password, user.password);
+      if (!isMatch) {
         return res.status(400).json({ error: 'Invalid credentials' });
       }
 
@@ -154,6 +157,7 @@ router.post('/onboard', async (req, res) => {
         if (p) Object.assign(p, data, { isOnboarded: true });
         else memoryDB.supplierProfiles.push({ id: generateId(), userId, ...data, isOnboarded: true });
       }
+      saveMemoryDB();
     }
     return res.json({ success: true, message: 'Onboarding profile saved successfully' });
   } catch (err) {

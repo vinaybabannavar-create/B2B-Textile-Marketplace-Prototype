@@ -83,14 +83,78 @@ async function generateProductDescription({ name, category, composition, gsm, we
 }
 
 /**
+ * Calls Hugging Face Inference API for open-ended conversational responses
+ */
+async function callHuggingFaceLLM(userPrompt, context = '') {
+  const apiKey = process.env.HUGGINGFACE_API_KEY;
+  // Default to a highly capable lightweight instruction model (Zephyr 7B Beta)
+  const model = process.env.HF_MODEL || 'HuggingFaceH4/zephyr-7b-beta';
+
+  if (!apiKey) {
+    throw new Error('HUGGINGFACE_API_KEY environment variable is not defined.');
+  }
+
+  const prompt = `<|system|>
+You are FabricMart AI, a helpful B2B textile sourcing specialist. Use the following context about our catalog: ${context}. Answer the buyer's questions professionally, concisely, and with correct textile terminology.
+<|user|>
+${userPrompt}
+<|assistant|>`;
+
+  try {
+    const res = await fetch(`https://api-inference.huggingface.co/models/${model}`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${apiKey}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        inputs: prompt,
+        parameters: {
+          max_new_tokens: 180,
+          temperature: 0.7,
+          return_full_text: false
+        }
+      })
+    });
+
+    if (!res.ok) {
+      throw new Error(`HF API status ${res.status}`);
+    }
+
+    const json = await res.json();
+    if (Array.isArray(json) && json[0]?.generated_text) {
+      return json[0].generated_text.trim();
+    } else if (json?.generated_text) {
+      return json.generated_text.trim();
+    }
+    throw new Error('Malformed API response');
+  } catch (err) {
+    console.warn('Hugging Face Inference call failed. Falling back to local rules.', err.message);
+    throw err;
+  }
+}
+
+/**
  * AI Assistant Chat & Q&A Handler
  */
 async function handleChatConversation(messages, userProfile = null, currentProduct = null) {
   const lastUserMsg = messages[messages.length - 1]?.text || '';
   const msgLower = lastUserMsg.toLowerCase();
 
-  // If asking about specific current product
+  // 1. If asking about a specific current product
   if (currentProduct && (msgLower.includes('this fabric') || msgLower.includes('gsm') || msgLower.includes('care') || msgLower.includes('moq') || msgLower.includes('sample'))) {
+    const context = `Product: ${currentProduct.name}, Category: ${currentProduct.category}, Price: $${currentProduct.price}, MOQ: ${currentProduct.moq}, Stock: ${currentProduct.stockQuantity}, GSM: ${currentProduct.specifications?.gsm}, Composition: ${currentProduct.specifications?.composition}`;
+    
+    // Try real LLM if key is configured
+    if (process.env.HUGGINGFACE_API_KEY) {
+      try {
+        const text = await callHuggingFaceLLM(lastUserMsg, context);
+        return { text, intent: 'product_qa', recommendedAction: 'add_to_cart' };
+      } catch (err) {
+        // Fall through to local rule
+      }
+    }
+
     return {
       text: `Regarding **${currentProduct.name}**:\n- **GSM / Weight**: ${currentProduct.specifications?.gsm || '200'} GSM\n- **Composition**: ${currentProduct.specifications?.composition || '100% Textile'}\n- **Minimum Order Quantity (MOQ)**: ${currentProduct.moq || 50} ${currentProduct.unit || 'meters'}\n- **Stock**: ${currentProduct.stockQuantity} meters ready in mill inventory.\n\nWould you like me to add a swatch sample or bulk quantity of this fabric to your cart?`,
       intent: 'product_qa',
@@ -98,17 +162,30 @@ async function handleChatConversation(messages, userProfile = null, currentProdu
     };
   }
 
-  // Natural language query intent
+  // 2. Natural language query intent (Structured filter query layer)
   if (msgLower.includes('find') || msgLower.includes('show') || msgLower.includes('looking for') || msgLower.includes('search')) {
     const parsedQuery = parseNaturalLanguageQuery(lastUserMsg);
+    
+    let text = `I've analyzed your request "${lastUserMsg}" and generated a structured filter query:\n- Category: ${parsedQuery.category || 'All Categories'}\n- Price Threshold: ${parsedQuery.maxPrice ? '$' + parsedQuery.maxPrice : 'Any'}\n- Spec Filter: ${parsedQuery.minGsm ? 'Heavyweight (>250 GSM)' : parsedQuery.maxGsm ? 'Lightweight (<180 GSM)' : 'Standard'}\n\nI have updated the marketplace grid results for you below!`;
+    
+    // Try to append conversational commentary from LLM
+    if (process.env.HUGGINGFACE_API_KEY) {
+      try {
+        const commentary = await callHuggingFaceLLM(`Briefly describe what kind of apparel or B2B garments are best suited for a fabric matching this description: ${lastUserMsg}`, `Query: ${JSON.stringify(parsedQuery)}`);
+        text += `\n\n💡 **AI Sourcing Tip:** ${commentary}`;
+      } catch (err) {
+        // Keep original text
+      }
+    }
+
     return {
-      text: `I've analyzed your request "${lastUserMsg}" and generated a structured filter query:\n- Category: ${parsedQuery.category || 'All Categories'}\n- Price Threshold: ${parsedQuery.maxPrice ? '$' + parsedQuery.maxPrice : 'Any'}\n- Spec Filter: ${parsedQuery.minGsm ? 'Heavyweight (>250 GSM)' : parsedQuery.maxGsm ? 'Lightweight (<180 GSM)' : 'Standard'}\n\nI have updated the marketplace grid results for you below!`,
+      text,
       intent: 'search_filter',
       filter: parsedQuery
     };
   }
 
-  // Comparison intent
+  // 3. Comparison intent prompt
   if (msgLower.includes('compare') || msgLower.includes('difference')) {
     return {
       text: `To compare fabrics side-by-side, tap the **"Compare"** button on any 2 or 3 product cards, or tell me which specific items you'd like to pit against each other in GSM, tensile strength, and cost-per-meter!`,
@@ -116,13 +193,34 @@ async function handleChatConversation(messages, userProfile = null, currentProdu
     };
   }
 
-  // Recommendation intent
+  // 4. Recommendation intent
   if (msgLower.includes('recommend') || msgLower.includes('suggest') || msgLower.includes('best for')) {
     const favCategory = userProfile?.preferredFabricTypes?.[0] || 'Organic Cotton & Silk';
+    const context = `Buyer Profile Category: ${favCategory}, Quantity Target: ${userProfile?.typicalOrderQuantity || '500-2,000 meters'}`;
+    
+    if (process.env.HUGGINGFACE_API_KEY) {
+      try {
+        const text = await callHuggingFaceLLM(lastUserMsg, context);
+        return { text, intent: 'recommendation' };
+      } catch (err) {
+        // Fall through
+      }
+    }
+
     return {
       text: `Based on your buyer profile (${userProfile?.businessType || 'Garment Production'}) and preferred focus on **${favCategory}**, I recommend exploring our top-rated **Mulberry Silk** and **240 GSM Twill Denim**. They match your typical quantity target of ${userProfile?.typicalOrderQuantity || '500-2,000 meters'}.`,
       intent: 'recommendation'
     };
+  }
+
+  // 5. Open Q&A (e.g. general questions about textile terms, yarn twist, GSM, etc.)
+  if (process.env.HUGGINGFACE_API_KEY) {
+    try {
+      const text = await callHuggingFaceLLM(lastUserMsg, 'General Q&A about B2B textile sourcing.');
+      return { text, intent: 'conversational' };
+    } catch (err) {
+      // Fall through
+    }
   }
 
   // General B2B textile advice fallback

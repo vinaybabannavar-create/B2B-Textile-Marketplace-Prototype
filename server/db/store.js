@@ -1,4 +1,8 @@
 const mongoose = require('mongoose');
+const fs = require('fs');
+const path = require('path');
+
+const dbPath = path.join(__dirname, 'memory_db.json');
 
 // In-memory store fallback when MongoDB is unavailable
 const memoryDB = {
@@ -12,6 +16,26 @@ const memoryDB = {
 };
 
 let isMongoConnected = false;
+
+// Load memory DB from file if it exists
+if (fs.existsSync(dbPath)) {
+  try {
+    const savedData = JSON.parse(fs.readFileSync(dbPath, 'utf8'));
+    Object.assign(memoryDB, savedData);
+    console.log('📦 Loaded existing database state from memory_db.json');
+  } catch (err) {
+    console.warn('⚠️ Could not load memory_db.json, starting fresh');
+  }
+}
+
+const saveMemoryDB = () => {
+  if (isMongoConnected) return;
+  try {
+    fs.writeFileSync(dbPath, JSON.stringify(memoryDB, null, 2), 'utf8');
+  } catch (err) {
+    console.error('Failed to persist database state to file:', err.message);
+  }
+};
 
 const connectDB = async () => {
   const mongoURI = process.env.MONGODB_URI || 'mongodb://127.0.0.1:27017/fabricmart';
@@ -34,5 +58,6 @@ module.exports = {
   connectDB,
   isMongoConnected: () => isMongoConnected,
   memoryDB,
+  saveMemoryDB,
   generateId
 };

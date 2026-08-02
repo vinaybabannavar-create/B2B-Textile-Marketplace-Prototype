@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const { Order, Cart } = require('../models/schemas');
-const { isMongoConnected, memoryDB, generateId } = require('../db/store');
+const { isMongoConnected, memoryDB, saveMemoryDB, generateId } = require('../db/store');
 
 // Checkout / Place Order
 router.post('/checkout', async (req, res) => {
@@ -64,6 +64,7 @@ router.post('/checkout', async (req, res) => {
     } else {
       let cart = memoryDB.carts.find(c => c.buyerId === buyerId);
       if (cart) cart.items = [];
+      saveMemoryDB();
     }
 
     return res.json({
@@ -132,6 +133,7 @@ router.put('/:orderId/status', async (req, res) => {
       if (!order) return res.status(404).json({ error: 'Order not found' });
       order.status = status;
       order.updatedAt = new Date();
+      saveMemoryDB();
       return res.json(order);
     }
   } catch (err) {

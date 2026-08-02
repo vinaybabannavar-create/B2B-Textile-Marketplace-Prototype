@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const { Cart, Product } = require('../models/schemas');
-const { isMongoConnected, memoryDB, generateId } = require('../db/store');
+const { isMongoConnected, memoryDB, saveMemoryDB, generateId } = require('../db/store');
 
 // Get cart for buyer
 router.get('/:buyerId', async (req, res) => {
@@ -30,6 +30,7 @@ router.get('/:buyerId', async (req, res) => {
       if (!cart) {
         cart = { id: generateId(), buyerId, items: [] };
         memoryDB.carts.push(cart);
+        saveMemoryDB();
       }
 
       const populatedItems = cart.items.map(item => {
@@ -82,6 +83,7 @@ router.post('/add', async (req, res) => {
           cart.items.push({ productId, quantity: qty });
         }
       }
+      saveMemoryDB();
       return res.json(cart);
     }
   } catch (err) {
@@ -119,6 +121,7 @@ router.put('/update', async (req, res) => {
             cart.items[existingIdx].quantity = quantity;
           }
         }
+        saveMemoryDB();
       }
       return res.json(cart);
     }
@@ -136,6 +139,7 @@ router.delete('/:buyerId', async (req, res) => {
     } else {
       let cart = memoryDB.carts.find(c => c.buyerId === buyerId);
       if (cart) cart.items = [];
+      saveMemoryDB();
     }
     return res.json({ success: true, message: 'Cart cleared' });
   } catch (err) {
