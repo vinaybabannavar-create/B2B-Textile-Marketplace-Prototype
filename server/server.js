@@ -68,3 +68,5 @@ app.listen(PORT, () => {
     console.log('💡 AI Assistant is running in smart NLU mode. (Set GEMINI_API_KEY or HUGGINGFACE_API_KEY in .env for open-ended LLM chat).');
   }
 });
+
+module.exports = app;

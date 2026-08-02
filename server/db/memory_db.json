@@ -63,41 +63,33 @@
   ],
   "products": [
     {
-      "_id": "mem_kk78r19j9msbnj3to",
-      "id": "mem_kk78r19j9msbnj3to",
-      "name": "Heavyweight Indigo Twill Denim",
+      "_id": "mem_uh52zek6bmsbp7k07",
+      "id": "mem_uh52zek6bmsbp7k07",
+      "supplierId": "buyer_demo_id",
+      "supplierName": "Vanguard Textile Mills",
+      "name": "Ring",
       "category": "Denim",
-      "description": "14.5 oz premium ring-spun cotton indigo twill denim. Ring-spun yarns provide characteristic slub texture and exceptional abrasion resistance for denim jackets, jeans, and heavy workwear.",
+      "description": "High quality B2B textile fabric.",
       "images": [
-        "https://images.unsplash.com/photo-1542272604-780c36856d66?w=900&q=80",
-        "https://images.unsplash.com/photo-1576995853123-5a10305d93c0?w=900&q=80"
+        "https://images.unsplash.com/photo-1542272604-780c36856d66?w=800&q=80"
       ],
       "colors": [
-        "Deep Indigo",
-        "Raw Blue",
-        "Washed Black"
+        "Indigo",
+        "White",
+        "Black"
       ],
       "specifications": {
-        "gsm": 420,
-        "width": "58/60 inches",
-        "composition": "100% Ring-Spun Cotton",
-        "weaveType": "3/1 Right-Hand Twill",
-        "stretch": "Non-stretch",
-        "pattern": "Solid",
-        "certifications": [
-          "OEKO-TEX Standard 100",
-          "GOTS Certified"
-        ]
+        "gsm": 220,
+        "composition": "100% Organic Cotton",
+        "weaveType": "Twill",
+        "width": "58/60 inches"
       },
-      "stockQuantity": 4500,
-      "price": 6.8,
-      "unit": "meter",
-      "moq": 100,
-      "supplierName": "Vanguard Textile Mills",
-      "supplierId": "sup_vanguard",
-      "rating": 4.9,
+      "stockQuantity": 1500,
+      "price": 8.5,
+      "moq": 50,
       "status": "available",
-      "createdAt": "2026-08-02T10:22:46.045Z"
+      "rating": 4.8,
+      "createdAt": "2026-08-02T11:09:46.374Z"
     },
     {
       "_id": "mem_7j6tym0sdmsbnj3tp",
@@ -362,6 +354,70 @@
     }
   ],
   "orders": [
+    {
+      "_id": "mem_htzu089rvmsbp5hs9",
+      "id": "mem_htzu089rvmsbp5hs9",
+      "buyerId": "buyer_demo_id",
+      "supplierId": "sup_silkheritage",
+      "supplierName": "Silk Heritage House",
+      "items": [
+        {
+          "productId": "mem_7j6tym0sdmsbnj3tp",
+          "name": "Pure Mulberry Silk Charmeuse",
+          "price": 24.5,
+          "quantity": 50,
+          "image": "https://images.unsplash.com/photo-1584100936595-c0654b55a2e2?w=900&q=80",
+          "category": "Silk"
+        }
+      ],
+      "totalAmount": 1225,
+      "shippingInfo": {
+        "companyName": "Apex Apparel Studio",
+        "contactPerson": "Sarah Jenkins",
+        "email": "sarah@apexgarments.com",
+        "phone": "+1 (555) 234-5678",
+        "address": "100 Fashion Way, Suite 400",
+        "city": "New York",
+        "country": "United States",
+        "notes": "Please pack rolls in heavy moisture-barrier paper cores."
+      },
+      "paymentTerms": "Escrow Net 30 Credit",
+      "status": "pending",
+      "createdAt": "2026-08-02T11:08:10.185Z",
+      "updatedAt": "2026-08-02T11:08:10.185Z"
+    },
+    {
+      "_id": "mem_wot00k5komsbp5hs9",
+      "id": "mem_wot00k5komsbp5hs9",
+      "buyerId": "buyer_demo_id",
+      "supplierId": "sup_vanguard",
+      "supplierName": "Vanguard Textile Mills",
+      "items": [
+        {
+          "productId": "prod_demo_1",
+          "name": "Heavyweight Indigo Twill Denim",
+          "price": 6.8,
+          "quantity": 200,
+          "image": "https://images.unsplash.com/photo-1542272604-780c36856d66?w=900&q=80",
+          "category": "Denim"
+        }
+      ],
+      "totalAmount": 1360,
+      "shippingInfo": {
+        "companyName": "Apex Apparel Studio",
+        "contactPerson": "Sarah Jenkins",
+        "email": "sarah@apexgarments.com",
+        "phone": "+1 (555) 234-5678",
+        "address": "100 Fashion Way, Suite 400",
+        "city": "New York",
+        "country": "United States",
+        "notes": "Please pack rolls in heavy moisture-barrier paper cores."
+      },
+      "paymentTerms": "Escrow Net 30 Credit",
+      "status": "pending",
+      "createdAt": "2026-08-02T11:08:10.185Z",
+      "updatedAt": "2026-08-02T11:08:10.185Z"
+    },
     {
       "_id": "mem_kur43xbfumsbnmzeb",
       "id": "mem_kur43xbfumsbnmzeb",
