@@ -103,7 +103,9 @@ function getGeminiClient() {
 }
 
 /**
- * Calls Google Gemini API for fast, high-quality conversational responses
+ * Calls Google Gemini API — supports both:
+ *   - Standard API Keys (AIza...) via @google/genai SDK
+ *   - OAuth2 Access Tokens (AQ...) via direct REST API with Bearer auth
  */
 async function callGeminiLLM(userPrompt, context = '') {
   const apiKey = process.env.GEMINI_API_KEY || process.env.GOOGLE_API_KEY;
@@ -111,18 +113,50 @@ async function callGeminiLLM(userPrompt, context = '') {
     throw new Error('GEMINI_API_KEY environment variable is not defined.');
   }
 
-  const ai = getGeminiClient();
   const systemInstruction = `You are FabricMart AI, an expert B2B textile sourcing specialist. Catalog context: ${context}. Answer the buyer's questions professionally, concisely, and with correct textile terminology.`;
+  const fullPrompt = `${systemInstruction}\nUser Question: ${userPrompt}`;
 
-  const response = await ai.models.generateContent({
-    model: 'gemini-2.0-flash',
-    contents: `${systemInstruction}\nUser Question: ${userPrompt}`
-  });
+  // Detect OAuth2 Bearer tokens (AQ. prefix) vs standard API keys (AIza prefix)
+  const isOAuthToken = apiKey.startsWith('AQ.') || apiKey.startsWith('ya29.');
 
-  if (response && response.text) {
-    return response.text.trim();
+  if (isOAuthToken) {
+    // Use direct REST API with OAuth2 Bearer authorization
+    const model = 'gemini-2.0-flash';
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`;
+    const res = await fetch(url, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${apiKey}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        contents: [{ parts: [{ text: fullPrompt }] }],
+        generationConfig: { maxOutputTokens: 300, temperature: 0.7 }
+      })
+    });
+
+    if (!res.ok) {
+      const errBody = await res.text();
+      throw new Error(`Gemini REST API error ${res.status}: ${errBody}`);
+    }
+
+    const json = await res.json();
+    const text = json?.candidates?.[0]?.content?.parts?.[0]?.text;
+    if (text) return text.trim();
+    throw new Error('Empty Gemini REST response');
+  } else {
+    // Standard API key — use the @google/genai SDK
+    const ai = getGeminiClient();
+    const response = await ai.models.generateContent({
+      model: 'gemini-2.0-flash',
+      contents: fullPrompt
+    });
+
+    if (response && response.text) {
+      return response.text.trim();
+    }
+    throw new Error('Gemini SDK returned empty response');
   }
-  throw new Error('Gemini API returned empty response');
 }
 
 /**
@@ -262,6 +296,19 @@ async function handleChatConversation(messages, userProfile = null, currentProdu
       const text = await callLLM(lastUserMsg, 'Expert B2B textile sourcing Q&A - answer clearly and concisely.');
       return { text, intent: 'conversational' };
     } catch (err) {
+      // Intelligently answer common B2B textile questions in fallback mode
+      if (msgLower.includes('gsm')) {
+        return {
+          text: `**GSM (Grams per Square Meter)** measures fabric weight and density:\n- **Lightweight (<180 GSM)**: Ideal for summer shirts, linings, and resortwear.\n- **Mediumweight (180–250 GSM)**: Versatile for trousers, dresses, and suiting.\n- **Heavyweight (>250 GSM)**: Essential for durable denim, workwear, jackets, and canvas.\n\nHigher GSM means thicker, more durable fabric with greater tensile strength!`,
+          intent: 'conversational'
+        };
+      }
+      if (msgLower.includes('moq')) {
+        return {
+          text: `**MOQ (Minimum Order Quantity)** is the smallest amount of fabric a mill will dye or weave per order. In FabricMart, our verified suppliers offer sample swatch MOQs starting at 20–50 meters for boutique designers!`,
+          intent: 'conversational'
+        };
+      }
       // Fall through to search filter
     }
   }
