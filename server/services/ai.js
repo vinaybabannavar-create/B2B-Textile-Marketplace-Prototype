@@ -82,16 +82,27 @@ async function generateProductDescription({ name, category, composition, gsm, we
   return `Introducing our premium ${name}, crafted specifically for B2B apparel production. Featuring a ${weightStr} ${weave} construction composed of ${comp}, this fabric offers outstanding dimensional stability, vibrant dye retention, and superior handfeel. Ideal for high-end garments and commercial manufacturing. Available in ${colorStr}. Fully tested for tensile strength and colorfastness.`;
 }
 
+const { HfInference } = require('@huggingface/inference');
+
+// Initialize Hugging Face Inference client
+let hfClient = null;
+if (process.env.HUGGINGFACE_API_KEY) {
+  hfClient = new HfInference(process.env.HUGGINGFACE_API_KEY);
+}
+
 /**
  * Calls Hugging Face Inference API for open-ended conversational responses
  */
 async function callHuggingFaceLLM(userPrompt, context = '') {
   const apiKey = process.env.HUGGINGFACE_API_KEY;
-  // Default to a highly capable lightweight instruction model (Zephyr 7B Beta)
   const model = process.env.HF_MODEL || 'HuggingFaceH4/zephyr-7b-beta';
 
   if (!apiKey) {
     throw new Error('HUGGINGFACE_API_KEY environment variable is not defined.');
+  }
+
+  if (!hfClient) {
+    hfClient = new HfInference(apiKey);
   }
 
   const prompt = `<|system|>
@@ -101,33 +112,20 @@ ${userPrompt}
 <|assistant|>`;
 
   try {
-    const res = await fetch(`https://api-inference.huggingface.co/models/${model}`, {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${apiKey}`,
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        inputs: prompt,
-        parameters: {
-          max_new_tokens: 180,
-          temperature: 0.7,
-          return_full_text: false
-        }
-      })
+    const response = await hfClient.textGeneration({
+      model,
+      inputs: prompt,
+      parameters: {
+        max_new_tokens: 180,
+        temperature: 0.7,
+        return_full_text: false
+      }
     });
 
-    if (!res.ok) {
-      throw new Error(`HF API status ${res.status}`);
+    if (response && response.generated_text) {
+      return response.generated_text.trim();
     }
-
-    const json = await res.json();
-    if (Array.isArray(json) && json[0]?.generated_text) {
-      return json[0].generated_text.trim();
-    } else if (json?.generated_text) {
-      return json.generated_text.trim();
-    }
-    throw new Error('Malformed API response');
+    throw new Error('Malformed SDK response');
   } catch (err) {
     console.warn('Hugging Face Inference call failed. Falling back to local rules.', err.message);
     throw err;
