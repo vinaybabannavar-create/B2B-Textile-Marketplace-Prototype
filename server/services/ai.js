@@ -137,13 +137,51 @@ ${userPrompt}
  */
 async function handleChatConversation(messages, userProfile = null, currentProduct = null) {
   const lastUserMsg = messages[messages.length - 1]?.text || '';
-  const msgLower = lastUserMsg.toLowerCase();
+  const msgTrimmed = lastUserMsg.trim();
+  const msgLower = msgTrimmed.toLowerCase();
 
-  // 1. If asking about a specific current product
+  // 1. Greetings handler ("hi", "hello", "hey", etc.)
+  if (/^(hi|hello|hey|greetings|good morning|good afternoon|good evening)\b/i.test(msgTrimmed)) {
+    return {
+      text: `Hello! 👋 How can I assist with your fabric sourcing today? You can ask me for fabric recommendations, search using natural language (e.g. *"Show me silk under $20"*), or select an option below:\n\n1. 🔍 **Natural Language Search**\n2. ⚖️ **Compare Fabrics**\n3. 💡 **Supplier Recommendations**\n4. 🎙️ **Voice Search Guidance**`,
+      intent: 'greeting'
+    };
+  }
+
+  // 2. Menu number selection ("1", "2", "3", "4")
+  if (msgTrimmed === '1' || msgLower.includes('option 1')) {
+    return {
+      text: `🔍 **Natural Language Search Guidance**:\nSimply type a natural sentence describing what you need, such as:\n- *"Show organic cotton under $15 per meter"*\n- *"Find heavyweight denim over 300 GSM"*\n- *"Looking for mulberry silk for eveningwear"*\n\nTry typing your search request now!`,
+      intent: 'help_search'
+    };
+  }
+
+  if (msgTrimmed === '2' || msgLower.includes('option 2')) {
+    return {
+      text: `⚖️ **Fabric Comparison Matrix**:\nTo compare fabrics side-by-side:\n1. Browse the marketplace catalog grid.\n2. Click the **"+ Compare"** button on 2 or 3 fabric cards.\n3. Open this AI Assistant drawer to view a full technical comparison matrix of GSM, composition, pricing, and MOQs!`,
+      intent: 'help_compare'
+    };
+  }
+
+  if (msgTrimmed === '3' || msgLower.includes('option 3')) {
+    const favCategory = userProfile?.preferredFabricTypes?.[0] || 'Organic Cotton & Silk';
+    return {
+      text: `💡 **AI Recommended Suppliers & Fabrics**:\nBased on your profile (**${userProfile?.businessType || 'Garment Manufacturer'}**) focusing on **${favCategory}**:\n- **Vanguard Textile Mills**: Premium 14.5oz Heavyweight Denim ($12.50/m, MOQ: 50m)\n- **Silk Heritage House**: Mulberry Silk Charmeuse ($24.00/m, MOQ: 20m)\n- **EcoTextile Co-Op**: Recycled Heavy Fleece Knit ($7.90/m, MOQ: 150m)\n\nWould you like me to filter the catalog to one of these mills?`,
+      intent: 'recommendation'
+    };
+  }
+
+  if (msgTrimmed === '4' || msgLower.includes('option 4')) {
+    return {
+      text: `🎙️ **Voice Assistance Guidance**:\nClick the **microphone icon** at the bottom of this chat window to activate voice input. Speak clearly (e.g. *"Show me lightweight linen under 12 dollars"*), and FabricMart AI will automatically parse your voice query and update the catalog!`,
+      intent: 'help_voice'
+    };
+  }
+
+  // 3. If asking about a specific current product
   if (currentProduct && (msgLower.includes('this fabric') || msgLower.includes('gsm') || msgLower.includes('care') || msgLower.includes('moq') || msgLower.includes('sample'))) {
     const context = `Product: ${currentProduct.name}, Category: ${currentProduct.category}, Price: $${currentProduct.price}, MOQ: ${currentProduct.moq}, Stock: ${currentProduct.stockQuantity}, GSM: ${currentProduct.specifications?.gsm}, Composition: ${currentProduct.specifications?.composition}`;
     
-    // Try real LLM if key is configured
     if (process.env.HUGGINGFACE_API_KEY) {
       try {
         const text = await callHuggingFaceLLM(lastUserMsg, context);
@@ -160,13 +198,14 @@ async function handleChatConversation(messages, userProfile = null, currentProdu
     };
   }
 
-  // 2. Natural language query intent (Structured filter query layer)
-  if (msgLower.includes('find') || msgLower.includes('show') || msgLower.includes('looking for') || msgLower.includes('search')) {
-    const parsedQuery = parseNaturalLanguageQuery(lastUserMsg);
+  // 4. Natural language query intent (Structured filter query layer)
+  // Matches search terms, fabric categories, or price triggers
+  const parsedQuery = parseNaturalLanguageQuery(lastUserMsg);
+  const hasFilterMatch = parsedQuery.category || parsedQuery.maxPrice || parsedQuery.minGsm || parsedQuery.maxGsm || parsedQuery.color;
+
+  if (hasFilterMatch || msgLower.includes('find') || msgLower.includes('show') || msgLower.includes('looking for') || msgLower.includes('search') || msgLower.includes('cotton') || msgLower.includes('silk') || msgLower.includes('denim') || msgLower.includes('linen') || msgLower.includes('wool') || msgLower.includes('fleece') || msgLower.includes('velvet') || msgLower.includes('knits')) {
+    let text = `I've analyzed your request "${lastUserMsg}" and applied the structured query filters:\n- Category: ${parsedQuery.category || 'All Categories'}\n- Price Limit: ${parsedQuery.maxPrice ? '$' + parsedQuery.maxPrice + '/m' : 'Any'}\n- Weight Spec: ${parsedQuery.minGsm ? 'Heavyweight (>250 GSM)' : parsedQuery.maxGsm ? 'Lightweight (<180 GSM)' : 'Standard'}\n\nMarketplace results have been updated below!`;
     
-    let text = `I've analyzed your request "${lastUserMsg}" and generated a structured filter query:\n- Category: ${parsedQuery.category || 'All Categories'}\n- Price Threshold: ${parsedQuery.maxPrice ? '$' + parsedQuery.maxPrice : 'Any'}\n- Spec Filter: ${parsedQuery.minGsm ? 'Heavyweight (>250 GSM)' : parsedQuery.maxGsm ? 'Lightweight (<180 GSM)' : 'Standard'}\n\nI have updated the marketplace grid results for you below!`;
-    
-    // Try to append conversational commentary from LLM
     if (process.env.HUGGINGFACE_API_KEY) {
       try {
         const commentary = await callHuggingFaceLLM(`Briefly describe what kind of apparel or B2B garments are best suited for a fabric matching this description: ${lastUserMsg}`, `Query: ${JSON.stringify(parsedQuery)}`);
@@ -183,15 +222,15 @@ async function handleChatConversation(messages, userProfile = null, currentProdu
     };
   }
 
-  // 3. Comparison intent prompt
-  if (msgLower.includes('compare') || msgLower.includes('difference')) {
+  // 5. Comparison intent prompt
+  if (msgLower.includes('compare') || msgLower.includes('difference') || msgLower.includes('vs')) {
     return {
-      text: `To compare fabrics side-by-side, tap the **"Compare"** button on any 2 or 3 product cards, or tell me which specific items you'd like to pit against each other in GSM, tensile strength, and cost-per-meter!`,
+      text: `To compare fabrics side-by-side, tap the **"+ Compare"** button on any 2 or 3 product cards in the marketplace, then open this drawer to view a full technical spec comparison!`,
       intent: 'compare_prompt'
     };
   }
 
-  // 4. Recommendation intent
+  // 6. Recommendation intent
   if (msgLower.includes('recommend') || msgLower.includes('suggest') || msgLower.includes('best for')) {
     const favCategory = userProfile?.preferredFabricTypes?.[0] || 'Organic Cotton & Silk';
     const context = `Buyer Profile Category: ${favCategory}, Quantity Target: ${userProfile?.typicalOrderQuantity || '500-2,000 meters'}`;
@@ -211,7 +250,7 @@ async function handleChatConversation(messages, userProfile = null, currentProdu
     };
   }
 
-  // 5. Open Q&A (e.g. general questions about textile terms, yarn twist, GSM, etc.)
+  // 7. General open Q&A (e.g. general questions about textile terms, yarn twist, GSM, etc.)
   if (process.env.HUGGINGFACE_API_KEY) {
     try {
       const text = await callHuggingFaceLLM(lastUserMsg, 'General Q&A about B2B textile sourcing.');
@@ -223,7 +262,7 @@ async function handleChatConversation(messages, userProfile = null, currentProdu
 
   // General B2B textile advice fallback
   return {
-    text: `Hello! I am **FabricMart AI**, your textile sourcing specialist. You can ask me to:\n1. 🔍 Search using natural language (e.g. *"Show lightweight linen under $12"*)\n2. ⚖️ Compare 2 or 3 fabrics technical specs\n3. 💡 Recommend mills based on your order MOQ & budget\n4. 🎙️ Voice search using the microphone button!`,
+    text: `I understand you are asking about: "${lastUserMsg}". As your B2B Textile Assistant, I can help you find fabrics, compare technical specs (GSM, width, weave), or suggest mill suppliers.\n\nTry asking: *"Show me cotton under $10"* or select a menu option:\n1. 🔍 **Natural Language Search**\n2. ⚖️ **Compare Fabrics**\n3. 💡 **Supplier Recommendations**\n4. 🎙️ **Voice Assistance**`,
     intent: 'general_help'
   };
 }
