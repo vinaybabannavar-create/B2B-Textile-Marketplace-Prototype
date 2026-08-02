@@ -115,7 +115,7 @@ async function callGeminiLLM(userPrompt, context = '') {
   const systemInstruction = `You are FabricMart AI, an expert B2B textile sourcing specialist. Catalog context: ${context}. Answer the buyer's questions professionally, concisely, and with correct textile terminology.`;
 
   const response = await ai.models.generateContent({
-    model: 'gemini-2.5-flash',
+    model: 'gemini-2.0-flash',
     contents: `${systemInstruction}\nUser Question: ${userPrompt}`
   });
 
@@ -254,6 +254,18 @@ async function handleChatConversation(messages, userProfile = null, currentProdu
     };
   }
 
+  // 3.5 — Open Q&A intent: questions starting with "what", "why", "how", "explain", "tell me", etc.
+  // Must be checked BEFORE the keyword-based search filter to avoid false positives.
+  const isQuestion = /^(what|why|how|when|where|which|who|explain|tell me|describe|define|is there|can you|difference between|compare)/i.test(msgTrimmed);
+  if (isQuestion) {
+    try {
+      const text = await callLLM(lastUserMsg, 'Expert B2B textile sourcing Q&A - answer clearly and concisely.');
+      return { text, intent: 'conversational' };
+    } catch (err) {
+      // Fall through to search filter
+    }
+  }
+
   // 4. Natural language query intent (Structured filter query layer)
   // Matches search terms, fabric categories, or price triggers
   const parsedQuery = parseNaturalLanguageQuery(lastUserMsg);
@@ -349,5 +361,8 @@ module.exports = {
   parseNaturalLanguageQuery,
   generateProductDescription,
   handleChatConversation,
-  compareProducts
+  compareProducts,
+  callLLM,
+  callGeminiLLM,
+  callHuggingFaceLLM
 };
