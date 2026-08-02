@@ -83,11 +83,46 @@ async function generateProductDescription({ name, category, composition, gsm, we
 }
 
 const { HfInference } = require('@huggingface/inference');
+const { GoogleGenAI } = require('@google/genai');
 
 // Initialize Hugging Face Inference client
 let hfClient = null;
 if (process.env.HUGGINGFACE_API_KEY) {
   hfClient = new HfInference(process.env.HUGGINGFACE_API_KEY);
+}
+
+// Initialize Gemini Client
+let geminiClient = null;
+function getGeminiClient() {
+  const apiKey = process.env.GEMINI_API_KEY || process.env.GOOGLE_API_KEY;
+  if (!apiKey) return null;
+  if (!geminiClient) {
+    geminiClient = new GoogleGenAI({ apiKey });
+  }
+  return geminiClient;
+}
+
+/**
+ * Calls Google Gemini API for fast, high-quality conversational responses
+ */
+async function callGeminiLLM(userPrompt, context = '') {
+  const apiKey = process.env.GEMINI_API_KEY || process.env.GOOGLE_API_KEY;
+  if (!apiKey) {
+    throw new Error('GEMINI_API_KEY environment variable is not defined.');
+  }
+
+  const ai = getGeminiClient();
+  const systemInstruction = `You are FabricMart AI, an expert B2B textile sourcing specialist. Catalog context: ${context}. Answer the buyer's questions professionally, concisely, and with correct textile terminology.`;
+
+  const response = await ai.models.generateContent({
+    model: 'gemini-2.5-flash',
+    contents: `${systemInstruction}\nUser Question: ${userPrompt}`
+  });
+
+  if (response && response.text) {
+    return response.text.trim();
+  }
+  throw new Error('Gemini API returned empty response');
 }
 
 /**
@@ -127,9 +162,32 @@ ${userPrompt}
     }
     throw new Error('Malformed SDK response');
   } catch (err) {
-    console.warn('Hugging Face Inference call failed. Falling back to local rules.', err.message);
+    console.warn('Hugging Face Inference call failed:', err.message);
     throw err;
   }
+}
+
+/**
+ * Unified LLM Dispatcher (Tries Gemini first if key available, then HuggingFace)
+ */
+async function callLLM(userPrompt, context = '') {
+  if (process.env.GEMINI_API_KEY || process.env.GOOGLE_API_KEY) {
+    try {
+      return await callGeminiLLM(userPrompt, context);
+    } catch (err) {
+      console.warn('Gemini LLM call failed, trying fallback if configured:', err.message);
+    }
+  }
+
+  if (process.env.HUGGINGFACE_API_KEY) {
+    try {
+      return await callHuggingFaceLLM(userPrompt, context);
+    } catch (err) {
+      console.warn('HuggingFace LLM call failed:', err.message);
+    }
+  }
+
+  throw new Error('No active LLM API keys configured or call failed.');
 }
 
 /**
@@ -182,13 +240,11 @@ async function handleChatConversation(messages, userProfile = null, currentProdu
   if (currentProduct && (msgLower.includes('this fabric') || msgLower.includes('gsm') || msgLower.includes('care') || msgLower.includes('moq') || msgLower.includes('sample'))) {
     const context = `Product: ${currentProduct.name}, Category: ${currentProduct.category}, Price: $${currentProduct.price}, MOQ: ${currentProduct.moq}, Stock: ${currentProduct.stockQuantity}, GSM: ${currentProduct.specifications?.gsm}, Composition: ${currentProduct.specifications?.composition}`;
     
-    if (process.env.HUGGINGFACE_API_KEY) {
-      try {
-        const text = await callHuggingFaceLLM(lastUserMsg, context);
-        return { text, intent: 'product_qa', recommendedAction: 'add_to_cart' };
-      } catch (err) {
-        // Fall through to local rule
-      }
+    try {
+      const text = await callLLM(lastUserMsg, context);
+      return { text, intent: 'product_qa', recommendedAction: 'add_to_cart' };
+    } catch (err) {
+      // Fall through to local rule
     }
 
     return {
@@ -206,13 +262,11 @@ async function handleChatConversation(messages, userProfile = null, currentProdu
   if (hasFilterMatch || msgLower.includes('find') || msgLower.includes('show') || msgLower.includes('looking for') || msgLower.includes('search') || msgLower.includes('cotton') || msgLower.includes('silk') || msgLower.includes('denim') || msgLower.includes('linen') || msgLower.includes('wool') || msgLower.includes('fleece') || msgLower.includes('velvet') || msgLower.includes('knits')) {
     let text = `I've analyzed your request "${lastUserMsg}" and applied the structured query filters:\n- Category: ${parsedQuery.category || 'All Categories'}\n- Price Limit: ${parsedQuery.maxPrice ? '$' + parsedQuery.maxPrice + '/m' : 'Any'}\n- Weight Spec: ${parsedQuery.minGsm ? 'Heavyweight (>250 GSM)' : parsedQuery.maxGsm ? 'Lightweight (<180 GSM)' : 'Standard'}\n\nMarketplace results have been updated below!`;
     
-    if (process.env.HUGGINGFACE_API_KEY) {
-      try {
-        const commentary = await callHuggingFaceLLM(`Briefly describe what kind of apparel or B2B garments are best suited for a fabric matching this description: ${lastUserMsg}`, `Query: ${JSON.stringify(parsedQuery)}`);
-        text += `\n\n💡 **AI Sourcing Tip:** ${commentary}`;
-      } catch (err) {
-        // Keep original text
-      }
+    try {
+      const commentary = await callLLM(`Briefly describe what kind of apparel or B2B garments are best suited for a fabric matching this description: ${lastUserMsg}`, `Query: ${JSON.stringify(parsedQuery)}`);
+      text += `\n\n💡 **AI Sourcing Tip:** ${commentary}`;
+    } catch (err) {
+      // Keep original text
     }
 
     return {
@@ -235,13 +289,11 @@ async function handleChatConversation(messages, userProfile = null, currentProdu
     const favCategory = userProfile?.preferredFabricTypes?.[0] || 'Organic Cotton & Silk';
     const context = `Buyer Profile Category: ${favCategory}, Quantity Target: ${userProfile?.typicalOrderQuantity || '500-2,000 meters'}`;
     
-    if (process.env.HUGGINGFACE_API_KEY) {
-      try {
-        const text = await callHuggingFaceLLM(lastUserMsg, context);
-        return { text, intent: 'recommendation' };
-      } catch (err) {
-        // Fall through
-      }
+    try {
+      const text = await callLLM(lastUserMsg, context);
+      return { text, intent: 'recommendation' };
+    } catch (err) {
+      // Fall through
     }
 
     return {
@@ -251,13 +303,11 @@ async function handleChatConversation(messages, userProfile = null, currentProdu
   }
 
   // 7. General open Q&A (e.g. general questions about textile terms, yarn twist, GSM, etc.)
-  if (process.env.HUGGINGFACE_API_KEY) {
-    try {
-      const text = await callHuggingFaceLLM(lastUserMsg, 'General Q&A about B2B textile sourcing.');
-      return { text, intent: 'conversational' };
-    } catch (err) {
-      // Fall through
-    }
+  try {
+    const text = await callLLM(lastUserMsg, 'General Q&A about B2B textile sourcing.');
+    return { text, intent: 'conversational' };
+  } catch (err) {
+    // Fall through
   }
 
   // General B2B textile advice fallback

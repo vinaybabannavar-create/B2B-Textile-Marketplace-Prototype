@@ -60,9 +60,11 @@ app.listen(PORT, () => {
   if (!process.env.JWT_SECRET) {
     console.log('⚠️ JWT_SECRET not set in environment. Using secure fallback for local development.');
   }
-  if (!process.env.HUGGINGFACE_API_KEY) {
-    console.log('💡 HUGGINGFACE_API_KEY not set. AI Assistant is running with local structured NLU search + recommendation engine.');
-  } else {
+  if (process.env.GEMINI_API_KEY || process.env.GOOGLE_API_KEY) {
+    console.log('🤖 Google Gemini API enabled for lightning-fast LLM conversation!');
+  } else if (process.env.HUGGINGFACE_API_KEY) {
     console.log('🤖 Hugging Face Inference API enabled for open-ended LLM chat.');
+  } else {
+    console.log('💡 AI Assistant is running in smart NLU mode. (Set GEMINI_API_KEY or HUGGINGFACE_API_KEY in .env for open-ended LLM chat).');
   }
 });

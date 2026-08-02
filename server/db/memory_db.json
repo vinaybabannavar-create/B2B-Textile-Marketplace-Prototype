@@ -1,0 +1,470 @@
+{
+  "users": [
+    {
+      "id": "mem_2wckvl3qamsbnj3to",
+      "_id": "mem_2wckvl3qamsbnj3to",
+      "name": "Apex Apparel Studio",
+      "email": "buyer@fabricmart.com",
+      "password": "$2a$10$H7MdCZe8e1bL3LJ9EwY5uOBJYEitXEQ8uk9nyscWPg1TQgHvd6VUy",
+      "role": "buyer",
+      "createdAt": "2026-08-02T10:22:46.044Z"
+    },
+    {
+      "id": "sup_vanguard",
+      "_id": "sup_vanguard",
+      "name": "Vanguard Mills",
+      "email": "supplier@vanguardmills.com",
+      "password": "$2a$10$H7MdCZe8e1bL3LJ9EwY5uOBJYEitXEQ8uk9nyscWPg1TQgHvd6VUy",
+      "role": "supplier",
+      "createdAt": "2026-08-02T10:22:46.044Z"
+    }
+  ],
+  "buyerProfiles": [
+    {
+      "id": "mem_2e8td9x0fmsbnj3to",
+      "userId": "mem_2wckvl3qamsbnj3to",
+      "businessType": "Boutique Apparel Brand",
+      "industry": "Fashion Apparel",
+      "categoriesOfInterest": [
+        "Denim",
+        "Silk",
+        "Linen"
+      ],
+      "preferredFabricTypes": [
+        "Heavy Cotton",
+        "Mulberry Silk"
+      ],
+      "typicalOrderQuantity": "500 - 2,000 meters",
+      "budgetRange": "$10,000 - $50,000",
+      "isOnboarded": true
+    }
+  ],
+  "supplierProfiles": [
+    {
+      "id": "mem_dkxrz238ymsbnj3to",
+      "userId": "sup_vanguard",
+      "businessName": "Vanguard Textile Mills",
+      "businessType": "Fabric Mill & Exporter",
+      "contactInfo": "+1 (800) 555-TEXTILE",
+      "businessAddress": "742 Mill Avenue, Industrial District, SC",
+      "operatingHours": "8:00 AM - 6:00 PM EST",
+      "productCategories": [
+        "Denim",
+        "Wool",
+        "Cotton"
+      ],
+      "fabricTypesOffered": [
+        "Heavyweight Denim",
+        "Merino Wool"
+      ],
+      "moq": 50,
+      "isOnboarded": true
+    }
+  ],
+  "products": [
+    {
+      "_id": "mem_kk78r19j9msbnj3to",
+      "id": "mem_kk78r19j9msbnj3to",
+      "name": "Heavyweight Indigo Twill Denim",
+      "category": "Denim",
+      "description": "14.5 oz premium ring-spun cotton indigo twill denim. Ring-spun yarns provide characteristic slub texture and exceptional abrasion resistance for denim jackets, jeans, and heavy workwear.",
+      "images": [
+        "https://images.unsplash.com/photo-1542272604-780c36856d66?w=900&q=80",
+        "https://images.unsplash.com/photo-1576995853123-5a10305d93c0?w=900&q=80"
+      ],
+      "colors": [
+        "Deep Indigo",
+        "Raw Blue",
+        "Washed Black"
+      ],
+      "specifications": {
+        "gsm": 420,
+        "width": "58/60 inches",
+        "composition": "100% Ring-Spun Cotton",
+        "weaveType": "3/1 Right-Hand Twill",
+        "stretch": "Non-stretch",
+        "pattern": "Solid",
+        "certifications": [
+          "OEKO-TEX Standard 100",
+          "GOTS Certified"
+        ]
+      },
+      "stockQuantity": 4500,
+      "price": 6.8,
+      "unit": "meter",
+      "moq": 100,
+      "supplierName": "Vanguard Textile Mills",
+      "supplierId": "sup_vanguard",
+      "rating": 4.9,
+      "status": "available",
+      "createdAt": "2026-08-02T10:22:46.045Z"
+    },
+    {
+      "_id": "mem_7j6tym0sdmsbnj3tp",
+      "id": "mem_7j6tym0sdmsbnj3tp",
+      "name": "Pure Mulberry Silk Charmeuse",
+      "category": "Silk",
+      "description": "19 momme pure Grade 6A Mulberry Silk charmeuse with a lustrous satin front and muted crepe back. Unrivaled fluid drape for luxury evening gowns, camisoles, and neckwear.",
+      "images": [
+        "https://images.unsplash.com/photo-1584100936595-c0654b55a2e2?w=900&q=80",
+        "https://images.unsplash.com/photo-1607604276583-eef5d076aa5f?w=900&q=80"
+      ],
+      "colors": [
+        "Champagne Ivory",
+        "Emerald Green",
+        "Ruby Red",
+        "Midnight Navy"
+      ],
+      "specifications": {
+        "gsm": 82,
+        "width": "44/45 inches",
+        "composition": "100% Grade 6A Mulberry Silk",
+        "weaveType": "Satin Weave",
+        "stretch": "Natural bias stretch",
+        "pattern": "Lustrous Solid",
+        "certifications": [
+          "OEKO-TEX Silk Standard"
+        ]
+      },
+      "stockQuantity": 1200,
+      "price": 24.5,
+      "unit": "meter",
+      "moq": 20,
+      "supplierName": "Silk Heritage House",
+      "supplierId": "sup_silkheritage",
+      "rating": 5,
+      "status": "available",
+      "createdAt": "2026-08-02T10:22:46.045Z"
+    },
+    {
+      "_id": "mem_zqr7k2ig3msbnj3tp",
+      "id": "mem_zqr7k2ig3msbnj3tp",
+      "name": "Organic European Flax Linen",
+      "category": "Linen",
+      "description": "Medium weight yarn-dyed organic French flax linen. Pre-washed for a soft vintage feel and distinctive slub texture. Highly breathable and absorbent for relaxed tailoring and summer apparel.",
+      "images": [
+        "https://images.unsplash.com/photo-1596755094514-f87e34085b2c?w=900&q=80",
+        "https://images.unsplash.com/photo-1528458876861-544fd1761a91?w=900&q=80"
+      ],
+      "colors": [
+        "Natural Oat",
+        "Terracotta",
+        "Sage Green",
+        "Crisp White"
+      ],
+      "specifications": {
+        "gsm": 175,
+        "width": "56 inches",
+        "composition": "100% Organic European Flax",
+        "weaveType": "Plain Weave",
+        "stretch": "None",
+        "pattern": "Slub Solid",
+        "certifications": [
+          "GOTS Certified",
+          "European Flax Standard"
+        ]
+      },
+      "stockQuantity": 3200,
+      "price": 9.4,
+      "unit": "meter",
+      "moq": 50,
+      "supplierName": "EcoTextile Co-Op",
+      "supplierId": "sup_ecotextiles",
+      "rating": 4.8,
+      "status": "available",
+      "createdAt": "2026-08-02T10:22:46.045Z"
+    },
+    {
+      "_id": "mem_vs45f2snomsbnj3tp",
+      "id": "mem_vs45f2snomsbnj3tp",
+      "name": "Super 120s Australian Merino Wool Suiting",
+      "category": "Wool",
+      "description": "Fine 17.5 micron Australian Merino wool worsted suiting fabric. Features subtle diagonal twill structure, high resilience, natural crease resistance, and silky handfeel for bespoken suits.",
+      "images": [
+        "https://images.unsplash.com/photo-1618221195710-dd6b41faaea6?w=900&q=80",
+        "https://images.unsplash.com/photo-1507679799987-c73779587ccf?w=900&q=80"
+      ],
+      "colors": [
+        "Charcoal Pinstripe",
+        "Classic Navy",
+        "Oxford Grey"
+      ],
+      "specifications": {
+        "gsm": 260,
+        "width": "59 inches",
+        "composition": "100% Super 120s Merino Wool",
+        "weaveType": "2/2 Worsted Twill",
+        "stretch": "Comfort natural stretch",
+        "pattern": "Subtle Herringbone / Solid",
+        "certifications": [
+          "Woolmark Gold Standard"
+        ]
+      },
+      "stockQuantity": 1800,
+      "price": 32,
+      "unit": "meter",
+      "moq": 30,
+      "supplierName": "Vanguard Textile Mills",
+      "supplierId": "sup_vanguard",
+      "rating": 4.9,
+      "status": "available",
+      "createdAt": "2026-08-02T10:22:46.045Z"
+    },
+    {
+      "_id": "mem_q85df39s0msbnj3tp",
+      "id": "mem_q85df39s0msbnj3tp",
+      "name": "Luxury Cotton Velvet",
+      "category": "Velvet",
+      "description": "Plush, dense pile 100% combed cotton velvet. Rich light absorption and intense depth of shade. Designed for eveningwear outerwear, smoking jackets, and high-end upholstery.",
+      "images": [
+        "https://images.unsplash.com/photo-1579783902614-a3fb3927b675?w=900&q=80"
+      ],
+      "colors": [
+        "Royal Burgundy",
+        "Midnight Black",
+        "Deep Sapphire"
+      ],
+      "specifications": {
+        "gsm": 380,
+        "width": "54 inches",
+        "composition": "100% Combed Cotton Pile",
+        "weaveType": "Woven Velvet Pile",
+        "stretch": "None",
+        "pattern": "Lustrous Solid Pile",
+        "certifications": [
+          "OEKO-TEX 100"
+        ]
+      },
+      "stockQuantity": 950,
+      "price": 18.2,
+      "unit": "meter",
+      "moq": 25,
+      "supplierName": "Silk Heritage House",
+      "supplierId": "sup_silkheritage",
+      "rating": 4.7,
+      "status": "available",
+      "createdAt": "2026-08-02T10:22:46.045Z"
+    },
+    {
+      "_id": "mem_5anckp881msbnj3tp",
+      "id": "mem_5anckp881msbnj3tp",
+      "name": "Recycled Heavy Fleece Knit",
+      "category": "Knits",
+      "description": "Ultra-cozy 400 GSM brushed back recycled polyester cotton fleece. Exceptionally warm, soft anti-pill face fabric optimized for hoodies, streetwear, and cold-weather loungewear.",
+      "images": [
+        "https://images.unsplash.com/photo-1516257984-b1b4d707412e?w=900&q=80"
+      ],
+      "colors": [
+        "Heather Grey",
+        "Oatmeal",
+        "Washed Black",
+        "Olive Drab"
+      ],
+      "specifications": {
+        "gsm": 400,
+        "width": "72 inches Tubular",
+        "composition": "70% Recycled Cotton, 30% Recycled Poly",
+        "weaveType": "Fleece Knit",
+        "stretch": "15% Mechanical Stretch",
+        "pattern": "Heathered Solid",
+        "certifications": [
+          "Global Recycled Standard (GRS)"
+        ]
+      },
+      "stockQuantity": 5000,
+      "price": 7.9,
+      "unit": "meter",
+      "moq": 150,
+      "supplierName": "EcoTextile Co-Op",
+      "supplierId": "sup_ecotextiles",
+      "rating": 4.8,
+      "status": "available",
+      "createdAt": "2026-08-02T10:22:46.045Z"
+    },
+    {
+      "_id": "mem_3tdo45yevmsbnj3tp",
+      "id": "mem_3tdo45yevmsbnj3tp",
+      "name": "Floral Metallic Jacquard Brocade",
+      "category": "Brocade",
+      "description": "Opulent ornate floral jacquard weave with subtle metallic gold threads. Rich dimensional embossing for couture gowns, theatrical costumes, and luxury coats.",
+      "images": [
+        "https://images.unsplash.com/photo-1579783900882-c0d3dad7b119?w=900&q=80"
+      ],
+      "colors": [
+        "Gold Noir",
+        "Silver Azure",
+        "Rose Gold Cream"
+      ],
+      "specifications": {
+        "gsm": 290,
+        "width": "55 inches",
+        "composition": "65% Viscose, 25% Polyester, 10% Metallic",
+        "weaveType": "Intricate Jacquard",
+        "stretch": "None",
+        "pattern": "Floral Damask Pattern",
+        "certifications": [
+          "ISO 9001 Certified"
+        ]
+      },
+      "stockQuantity": 750,
+      "price": 21,
+      "unit": "meter",
+      "moq": 20,
+      "supplierName": "Silk Heritage House",
+      "supplierId": "sup_silkheritage",
+      "rating": 4.9,
+      "status": "available",
+      "createdAt": "2026-08-02T10:22:46.045Z"
+    },
+    {
+      "_id": "mem_1amc6uchwmsbnj3tp",
+      "id": "mem_1amc6uchwmsbnj3tp",
+      "name": "Sustainable Bamboo Viscose Jersey",
+      "category": "Synthetics",
+      "description": "Ultra-soft silky handfeel 200 GSM Bamboo Viscose single jersey with 5% elastane. Hypoallergenic, moisture-wicking, and stretch-resilient for t-shirts, activewear, and undergarments.",
+      "images": [
+        "https://images.unsplash.com/photo-1528458876861-544fd1761a91?w=900&q=80"
+      ],
+      "colors": [
+        "Pure White",
+        "Blush Pink",
+        "Jet Black",
+        "Sky Blue"
+      ],
+      "specifications": {
+        "gsm": 200,
+        "width": "62 inches",
+        "composition": "95% Organic Bamboo Viscose, 5% Spandex",
+        "weaveType": "Single Jersey Knit",
+        "stretch": "4-Way Stretch",
+        "pattern": "Smooth Solid",
+        "certifications": [
+          "FSC Certified Bamboo",
+          "OEKO-TEX"
+        ]
+      },
+      "stockQuantity": 6000,
+      "price": 5.4,
+      "unit": "meter",
+      "moq": 100,
+      "supplierName": "EcoTextile Co-Op",
+      "supplierId": "sup_ecotextiles",
+      "rating": 4.7,
+      "status": "available",
+      "createdAt": "2026-08-02T10:22:46.045Z"
+    }
+  ],
+  "carts": [
+    {
+      "id": "mem_2l5pkmjaymsbnju0e",
+      "buyerId": "buyer_demo_id",
+      "items": []
+    }
+  ],
+  "orders": [
+    {
+      "_id": "mem_kur43xbfumsbnmzeb",
+      "id": "mem_kur43xbfumsbnmzeb",
+      "buyerId": "buyer_demo_id",
+      "supplierId": "sup_vanguard",
+      "supplierName": "Vanguard Textile Mills",
+      "items": [
+        {
+          "productId": "prod_demo_1",
+          "name": "Heavyweight Indigo Twill Denim",
+          "price": 6.8,
+          "quantity": 200,
+          "image": "https://images.unsplash.com/photo-1542272604-780c36856d66?w=900&q=80",
+          "category": "Denim"
+        },
+        {
+          "productId": "mem_kk78r19j9msbnj3to",
+          "name": "Heavyweight Indigo Twill Denim",
+          "price": 6.8,
+          "quantity": 100,
+          "image": "https://images.unsplash.com/photo-1542272604-780c36856d66?w=900&q=80",
+          "category": "Denim"
+        }
+      ],
+      "totalAmount": 2040,
+      "shippingInfo": {
+        "companyName": "Apex Apparel Studio",
+        "contactPerson": "Sarah Jenkins",
+        "email": "sarah@apexgarments.com",
+        "phone": "+1 (555) 234-5678",
+        "address": "100 Fashion Way, Suite 400",
+        "city": "New York",
+        "country": "United States",
+        "notes": "Please pack rolls in heavy moisture-barrier paper cores."
+      },
+      "paymentTerms": "Escrow Net 30 Credit",
+      "status": "pending",
+      "createdAt": "2026-08-02T10:25:46.931Z",
+      "updatedAt": "2026-08-02T10:25:46.931Z"
+    },
+    {
+      "_id": "ord_demo_101",
+      "id": "ord_demo_101",
+      "buyerId": "mem_2wckvl3qamsbnj3to",
+      "supplierId": "sup_vanguard",
+      "supplierName": "Vanguard Textile Mills",
+      "items": [
+        {
+          "productId": "mem_kk78r19j9msbnj3to",
+          "name": "Heavyweight Indigo Twill Denim",
+          "price": 6.8,
+          "quantity": 250,
+          "image": "https://images.unsplash.com/photo-1542272604-780c36856d66?w=900&q=80",
+          "category": "Denim"
+        }
+      ],
+      "totalAmount": 1700,
+      "shippingInfo": {
+        "companyName": "Apex Apparel Studio",
+        "contactPerson": "Sarah Jenkins",
+        "email": "sarah@apexgarments.com",
+        "phone": "+1 (555) 234-5678",
+        "address": "100 Fashion Way, Suite 400",
+        "city": "New York",
+        "country": "United States",
+        "notes": "Please pack in roll form on heavy paper cores."
+      },
+      "paymentTerms": "Escrow Net 30 Credit",
+      "status": "preparing",
+      "createdAt": "2026-07-31T10:22:46.045Z",
+      "updatedAt": "2026-08-02T10:22:46.045Z"
+    },
+    {
+      "_id": "ord_demo_102",
+      "id": "ord_demo_102",
+      "buyerId": "mem_2wckvl3qamsbnj3to",
+      "supplierId": "sup_silkheritage",
+      "supplierName": "Silk Heritage House",
+      "items": [
+        {
+          "productId": "mem_7j6tym0sdmsbnj3tp",
+          "name": "Pure Mulberry Silk Charmeuse",
+          "price": 24.5,
+          "quantity": 50,
+          "image": "https://images.unsplash.com/photo-1584100936595-c0654b55a2e2?w=900&q=80",
+          "category": "Silk"
+        }
+      ],
+      "totalAmount": 1225,
+      "shippingInfo": {
+        "companyName": "Apex Apparel Studio",
+        "contactPerson": "Sarah Jenkins",
+        "email": "sarah@apexgarments.com",
+        "phone": "+1 (555) 234-5678",
+        "address": "100 Fashion Way, Suite 400",
+        "city": "New York",
+        "country": "United States"
+      },
+      "paymentTerms": "Letter of Credit (L/C)",
+      "status": "pending",
+      "createdAt": "2026-08-02T06:22:46.045Z",
+      "updatedAt": "2026-08-02T10:22:46.045Z"
+    }
+  ],
+  "chatLogs": []
+}
